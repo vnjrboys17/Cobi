@@ -115,188 +115,42 @@
 
 
         <main id="detail-view" class="hidden flex-1 overflow-y-auto pb-8 flex flex-col">
-            <div class="w-full h-72 bg-gradient-to-b from-emerald-50 to-white relative flex items-center justify-center">
-                
-                <model-viewer id="plant-model" 
-                              src="" 
-                              ar 
-                              ar-modes="webxr scene-viewer quick-look" 
-                              camera-controls 
-                              poster="https://images.unsplash.com/photo-1545147986-a9d6f2103c59?w=300" 
-                              shadow-intensity="1" 
-                              class="w-full h-full">
-                    
-                    <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
-                        <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm" data-scale="0.5 0.5 0.5" id="btn-scale-1">1</button>
-                        <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm active" data-scale="1 1 1" id="btn-scale-2">2</button>
-                        <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm" data-scale="1.8 1.8 1.8" id="btn-scale-3">3</button>
-                    </div>
-
-                    <button slot="ar-button" id="ar-button" class="absolute bottom-4 left-1/2 -translate-x-1/2">
-                        <span class="material-symbols-outlined">view_in_ar</span>
-                        Lihat di Sekitarmu (AR)
-                    </button>
-                </model-viewer>
-
-                <button onclick="goToHome()" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md shadow flex items-center justify-center text-gray-700">
-                    <span class="material-symbols-outlined text-sm">arrow_back</span>
-                </button>
+    <div class="w-full h-72 bg-gradient-to-b from-emerald-50 to-white relative flex items-center justify-center">
+        
+        <model-viewer id="plant-model" 
+                      src="" 
+                      ar 
+                      ar-modes="webxr scene-viewer quick-look" 
+                      camera-controls 
+                      poster="https://images.unsplash.com/photo-1545147986-a9d6f2103c59?w=300" 
+                      shadow-intensity="1" 
+                      class="w-full h-full">
+            
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
+                <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm" data-phase="1" id="btn-scale-1">1</button>
+                <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm active" data-phase="2" id="btn-scale-2">2</button>
+                <button class="btn-scale w-10 h-10 rounded-xl bg-[#2A5C43] text-white font-bold flex items-center justify-center text-sm" data-phase="3" id="btn-scale-3">3</button>
             </div>
 
-            <div class="px-6 pt-4 flex-1">
-                <span class="px-2.5 py-1 bg-emerald-100 text-[#2A5C43] text-[10px] font-bold rounded-full uppercase tracking-wider" id="plant-family">Arecaceae</span>
-                <h2 class="text-2xl font-bold text-[#1A3024] mt-2" id="plant-name">Tanaman Palem</h2>
-                <p class="text-xs italic text-gray-400 font-medium" id="plant-latin">Arecaceae Sp.</p>
-                
-                <div class="mt-4 border-t border-gray-100 pt-4">
-                    <h4 class="text-xs font-bold text-gray-700 mb-1">Deskripsi Tanaman</h4>
-                    <p class="text-xs text-gray-500 leading-relaxed" id="plant-desc">
-                        Memuat data deskripsi tanaman...
-                    </p>
-                </div>
-            </div>
-        </main>
+            <button slot="ar-button" id="ar-button" class="absolute bottom-4 left-1/2 -translate-x-1/2">
+                <span class="material-symbols-outlined">view_in_ar</span>
+                Lihat di Sekitarmu (AR)
+            </button>
+        </model-viewer>
 
+        <button onclick="goToHome()" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md shadow flex items-center justify-center text-gray-700">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+        </button>
     </div>
 
-    <script>
-        const scanBtn = document.getElementById('scan-btn');
-        const closeBtn = document.getElementById('close-btn');
-        const scannerContainer = document.getElementById('scanner-container');
+    <div class="px-6 pt-4 flex-1">
+        <span class="px-2.5 py-1 bg-emerald-100 text-[#2A5C43] text-[10px] font-bold rounded-full uppercase tracking-wider" id="plant-family">Arecaceae</span>
+        <h2 class="text-2xl font-bold text-[#1A3024] mt-2" id="plant-name">Tanaman Palem</h2>
+        <p class="text-xs italic text-gray-400 font-medium" id="plant-latin">Arecaceae Sp.</p>
         
-        const homeView = document.getElementById('home-view');
-        const detailView = document.getElementById('detail-view');
-        
-        let html5QrCode;
-
-        // 1. DATABASE LOKAL SEDERHANA (Tempat menyimpan info tanaman & file .glb)
-        const plantDatabase = {
-            "palm": {
-                name: "Pohon Palem Raja",
-                latin: "Roystonea regia",
-                family: "Arecaceae",
-                modelUrl: "tropical_palm_tree.glb", 
-                desc: "Palem raja adalah tumbuhan berkeping satu (monokotil) yang termasuk dalam keluarga Arecaceae. Pohon ini memiliki batang lurus, kokoh, dan tidak bercabang. Sering digunakan sebagai tanaman hias jalur hijau jalan atau taman besar."
-            },
-            "mangga": {
-                name: "Pohon Mangga",
-                latin: "Mangifera indica",
-                family: "Anacardiaceae",
-                modelUrl: "mango_tree_fix.glb", 
-                desc: "Pohon mangga adalah tanaman berkayu dengan tajuk yang rimbun dan daun lebat. Tanaman ini sangat populer ditanam di pekarangan rumah sebagai pohon peneduh sekaligus penghasil buah yang manis."
-            }
-        };
-
-        // 2. FUNGSI UNTUK MERUBAH TAMPILAN KE DETAIL TANAMAN
-        function showPlantDetail(id) {
-            const plant = plantDatabase[id];
-            if (!plant) {
-                alert("Data tanaman tidak ditemukan di sistem!");
-                return;
-            }
-
-            // Set konten HTML sesuai data tanaman
-            document.getElementById('plant-name').innerText = plant.name;
-            document.getElementById('plant-latin').innerText = plant.latin;
-            document.getElementById('plant-family').innerText = plant.family;
-            document.getElementById('plant-desc').innerText = plant.desc;
-            
-            // Set sumber file 3D .glb ke komponen model-viewer
-            const modelViewer = document.getElementById('plant-model');
-            modelViewer.setAttribute('src', plant.modelUrl);
-
-            // ====== LOGIKA DEFAULT TOMBOL 2 SAAT BERHASIL SCAN QR CODE ======
-            // Kembalikan skala model-viewer ke ukuran normal ("1 1 1")
-            modelViewer.setAttribute('scale', '1 1 1');
-            
-            // Atur status active class visual ke tombol nomor 2
-            const scaleButtons = document.querySelectorAll('.btn-scale');
-            scaleButtons.forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-scale-2').classList.add('active');
-
-            // Tukar Viewport dari Home ke Detail
-            homeView.classList.add('hidden');
-            detailView.classList.remove('hidden');
-        }
-
-        // ====== INITIALIZATION LOGIK TOMBOL SKALA INTERAKTIF ======
-        document.addEventListener("DOMContentLoaded", () => {
-            const modelViewer = document.getElementById('plant-model');
-            const scaleButtons = document.querySelectorAll('.btn-scale');
-
-            scaleButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    // Ambil nilai koordinat skala (X Y Z) dari atribut data-scale
-                    const targetScale = e.target.getAttribute('data-scale');
-                    
-                    // Rubah atribut skala pada model 3D
-                    modelViewer.setAttribute('scale', targetScale);
-
-                    // Pindahkan class active agar tombol menyala sesuai yang dipilih
-                    scaleButtons.forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                });
-            });
-        });
-
-        function goToHome() {
-            // Reset URL parameter tanpa reload halaman
-            window.history.pushState({}, document.title, window.location.pathname);
-            detailView.classList.add('hidden');
-            homeView.classList.remove('hidden');
-        }
-
-        // 3. LOGIKA SCANNER QR CODE
-        function onScanSuccess(decodedText) {
-            stopScanner();
-            
-            try {
-                if (decodedText.includes('?plant=')) {
-                    const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-                    const plantId = urlParams.get('plant');
-                    showPlantDetail(plantId);
-                } 
-                else if (plantDatabase[decodedText]) {
-                    showPlantDetail(decodedText);
-                } else {
-                    alert("QR Code terbaca: " + decodedText + ". Namun tidak cocok dengan database tanaman.");
-                }
-            } catch (e) {
-                alert("Gagal memproses data QR.");
-            }
-        }
-
-        // Trigger buka kamera
-        scanBtn.addEventListener('click', () => {
-            scannerContainer.classList.remove('hidden');
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: 250 }, 
-                onScanSuccess
-            ).catch(() => {
-                alert("Gagal akses kamera.");
-                stopScanner();
-            });
-        });
-
-        function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => scannerContainer.classList.add('hidden'));
-            } else {
-                scannerContainer.classList.add('hidden');
-            }
-        }
-        closeBtn.addEventListener('click', stopScanner);
-
-        // 4. MENGECEK APAKAH USER MEMBUKA LINK LANGSUNG DARI QR (Deep-linking)
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const plantId = urlParams.get('plant');
-            if (plantId && plantDatabase[plantId]) {
-                showPlantDetail(plantId);
-            }
-        });
-    </script>
-</body>
-</html>
+        <div class="mt-4 border-t border-gray-100 pt-4">
+            <h4 class="text-xs font-bold text-gray-700 mb-1">Deskripsi Tanaman</h4>
+            <p class="text-xs text-gray-500 leading-relaxed" id="plant-desc">Memuat data deskripsi tanaman...</p>
+        </div>
+    </div>
+</main>

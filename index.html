@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TangkalNaonAR</title>
+    <title>TangkalNaonAR - WebAR Edukasi Tanaman</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +21,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #F8F9FA;
         }
-        /* Custom styling untuk tombol AR bawaan model-viewer */
+        /* Kustomisasi Tombol AR Bawaan Model-Viewer */
         #ar-button {
             background-color: #2A5C43;
             border-radius: 12px;
@@ -35,7 +36,7 @@
             box-shadow: 0 4px 12px rgba(42, 92, 67, 0.3);
         }
         
-        /* Animasi transisi tombol fase pertumbuhan */
+        /* Gaya Visual Tombol Fase 1, 2, 3 */
         .btn-scale {
             transition: all 0.2s ease;
             opacity: 0.6;
@@ -167,10 +168,10 @@
         const detailView = document.getElementById('detail-view');
         
         let html5QrCode;
-        let currentPlantId = ""; // Menyimpan acuan ID tanaman yang sedang diaktifkan pengguna
+        let currentPlantId = ""; 
 
-        // 1. DATABASE LOKAL MULTI-FASE PERTUMBUHAN (.GLB)
-        // Silakan sesuaikan nama file di dalam objek 'models' berikut dengan nama file asli Anda
+        // 1. DATABASE DATA TANAMAN DAN NAMA ASET FILE .GLB MASING-MASING FASE
+        // Pastikan nama file di bawah ini sesuai dengan nama file asli yang Anda unggah ke GitHub!
         const plantDatabase = {
             "palm": {
                 name: "Pohon Palem Raja",
@@ -178,9 +179,9 @@
                 family: "Arecaceae",
                 desc: "Palem raja adalah tumbuhan berkeping satu (monokotil) yang termasuk dalam keluarga Arecaceae. Pohon ini memiliki batang lurus, kokoh, dan tidak bercabang. Sering digunakan sebagai tanaman hias jalur hijau jalan atau taman besar.",
                 models: {
-                    "1": "palm_tunas.glb",    // File saat tombol 1 ditekan (Tunas)
-                    "2": "palm_remaja.glb",   // File saat tombol 2 ditekan (Remaja - Default ukuran sekarang)
-                    "3": "palm_berbuah.glb"  // File saat tombol 3 ditekan (Besar / Berbuah)
+                    "1": "palm_tunas.glb",    // File Fase Tunas (Tombol 1)
+                    "2": "palm_remaja.glb",   // File Fase Remaja / Ukuran Sekarang (Tombol 2 - Default)
+                    "3": "palm_berbuah.glb"  // File Fase Berbuah / Besar (Tombol 3)
                 }
             },
             "mangga": {
@@ -189,14 +190,14 @@
                 family: "Anacardiaceae",
                 desc: "Pohon mangga adalah tanaman berkayu dengan tajuk yang rimbun dan daun lebat. Tanaman ini sangat populer ditanam di pekarangan rumah sebagai pohon peneduh sekaligus penghasil buah yang manis.",
                 models: {
-                    "1": "mangga_tunas.glb",   // File saat tombol 1 ditekan (Tunas)
-                    "2": "mango_tree_fix.glb", // File saat tombol 2 ditekan (Remaja / Ukuran sekarang - Default)
-                    "3": "mangga_berbuah.glb" // File saat tombol 3 ditekan (Besar / Berbuah)
+                    "1": "mangga_tunas.glb",   // File Fase Tunas (Tombol 1)
+                    "2": "mango_tree_fix.glb", // File Fase Remaja / Ukuran Sekarang (Tombol 2 - Default)
+                    "3": "mangga_berbuah.glb" // File Fase Berbuah / Besar (Tombol 3)
                 }
             }
         };
 
-        // 2. FUNGSI MENAMPILKAN DETAIL DATA DAN RESET KE TOMBOL 2 SEBAGAI DEFAULT
+        // 2. FUNGSI MENAMPILKAN DETAIL & MERESET TOMBOL KEMBALI KE NOMOR 2 (DEFAULT)
         function showPlantDetail(id) {
             const plant = plantDatabase[id];
             if (!plant) {
@@ -204,102 +205,102 @@
                 return;
             }
 
-            // Kunci ID tanaman aktif agar tombol fase tahu aset mana yang harus dipanggil
             currentPlantId = id; 
 
-            // Pasang Informasi Tekstual ke Elemen HTML
+            // Pasang teks ke elemen informasi
             document.getElementById('plant-name').innerText = plant.name;
             document.getElementById('plant-latin').innerText = plant.latin;
             document.getElementById('plant-family').innerText = plant.family;
             document.getElementById('plant-desc').innerText = plant.desc;
             
-            // Ambil referensi komponen 3D model-viewer
             const modelViewer = document.getElementById('plant-model');
             
-            // ====== RESET DEFAULT: SELALU PAKSA LOAD FILE TOMBOL NOMOR 2 SETELAH SCAN ======
+            // ====== LOGIKA QR SCAN SUCCESS DEFAULT: Paksa panggil file .glb Tombol nomor 2 ======
             modelViewer.setAttribute('src', plant.models["2"]);
 
-            // Segarkan status keaktifan visual tombol (Paksa Tombol 2 Menyala)
+            // Atur agar tombol nomor 2 menyala secara visual
             const scaleButtons = document.querySelectorAll('.btn-scale');
             scaleButtons.forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-scale-2').classList.add('active');
 
-            // Jalankan perpindahan layar (Sembunyikan Home, Munculkan Detail)
+            // Ganti Layar
             homeView.classList.add('hidden');
             detailView.classList.remove('hidden');
         }
 
-        // 3. LOGIKA INTERAKTIF GANTI FILE .GLB SAAT TOMBOL FASE DIKLIK
+        // 3. EVENT LISTENER UNTUK KLIK TOMBOL FASE (1, 2, 3) SINKRON KE VIEWPORT & AR
         document.addEventListener("DOMContentLoaded", () => {
             const modelViewer = document.getElementById('plant-model');
             const scaleButtons = document.querySelectorAll('.btn-scale');
 
             scaleButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    // Ambil fase nomor berapa yang sedang diklik (1, 2, atau 3)
                     const selectedPhase = e.target.getAttribute('data-phase');
-                    
-                    // Tarik data tanaman aktif dari database berdasarkan currentPlantId
                     const activePlant = plantDatabase[currentPlantId];
                     
                     if (activePlant && activePlant.models[selectedPhase]) {
-                        // Ubah file sumber .glb di model-viewer ke fase baru
+                        // Ganti file 3D di layar & otomatis memperbarui aset proyektor AR
                         modelViewer.setAttribute('src', activePlant.models[selectedPhase]);
-                        
-                        // CATATAN: Karena atribut 'src' berubah, saat user menekan "Lihat di AR",
-                        // model-viewer otomatis mengirimkan berkas .glb fase baru tersebut ke kamera AR!
                     }
 
-                    // Pindahkan penanda class active tombol secara visual
                     scaleButtons.forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
                 });
             });
         });
 
-        // Fungsi Tombol Kembali ke Beranda
         function goToHome() {
             window.history.pushState({}, document.title, window.location.pathname);
             detailView.classList.add('hidden');
             homeView.classList.remove('hidden');
         }
 
-        // 4. KONTROL ENGINE SCANNER QR CODE
+        // 4. LOGIKA PENGOPERASIAN KAMERA QR SCANNER (Kompatibel Android & iOS)
         function onScanSuccess(decodedText) {
             stopScanner();
             try {
-                // Pola A: Jika QR berisi tautan parameter URL (contoh: https://domain.com/?plant=mangga)
                 if (decodedText.includes('?plant=')) {
                     const urlParams = new URLSearchParams(decodedText.split('?')[1]);
                     const plantId = urlParams.get('plant');
                     showPlantDetail(plantId);
                 } 
-                // Pola B: Jika QR berisi plain text ID mentah langsung (contoh isi QR hanya teks: mangga)
                 else if (plantDatabase[decodedText]) {
                     showPlantDetail(decodedText);
                 } else {
-                    alert("QR Code terbaca: [" + decodedText + "], namun data tanaman tersebut belum didaftarkan di database.");
+                    alert("QR Code terbaca: [" + decodedText + "], namun tidak terdaftar di database.");
                 }
             } catch (e) {
-                alert("Sistem gagal memproses pembacaan data QR.");
+                alert("Gagal memproses pembacaan stiker QR.");
             }
         }
 
-        // Nyalakan Kamera
+        // Membuka Kamera Scanner (Dengan validasi keamanan HTTPS + perbaikan objek qrbox)
         scanBtn.addEventListener('click', () => {
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                alert("Akses Kamera Ditolak!\nBrowser mewajibkan protokol aman (HTTPS) untuk mengaktifkan kamera AR. Silakan unggah ke GitHub Pages agar mendapatkan link HTTPS gratis.");
+                return;
+            }
+
             scannerContainer.classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
+            
+            // Konfigurasi qrbox berbasis objek agar stabil di Chrome Android dan Safari iOS
+            const configObj = { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 } 
+            };
+
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                { fps: 10, qrbox: 250 }, 
+                configObj, 
                 onScanSuccess
-            ).catch(() => {
-                alert("Akses kamera ditolak atau tidak ditemukan.");
+            ).catch((err) => {
+                console.error(err);
+                alert("Gagal mengaktifkan kamera.\nPastikan Anda telah memberikan izin akses kamera pada browser Anda.\n\nDetail: " + err);
                 stopScanner();
             });
         });
 
-        // Matikan Kamera
         function stopScanner() {
             if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().then(() => scannerContainer.classList.add('hidden'));
@@ -309,7 +310,7 @@
         }
         closeBtn.addEventListener('click', stopScanner);
 
-        // 5. DETEKSI DEEP-LINKING (Jika QR dibuka langsung via aplikasi kamera bawaan HP)
+        // 5. PENANGANAN LINK LANGSUNG (Deep-Linking dari QR bawaan ponsel)
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const plantId = urlParams.get('plant');
